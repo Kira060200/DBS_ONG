@@ -1,0 +1,461 @@
+CREATE TABLE sponsor(
+    id_sponsor NUMBER(4) NOT NULL,
+    nume VARCHAR2(30) CONSTRAINT sp_nume NOT NULL,
+    CONSTRAINT PK_sponsor PRIMARY KEY(id_sponsor)
+);
+
+CREATE TABLE continent(
+    id_cont NUMBER NOT NULL,
+    nume VARCHAR2(30) CONSTRAINT nume_cont NOT NULL,
+    CONSTRAINT PK_continent PRIMARY KEY(id_cont)
+);
+
+CREATE TABLE tara(
+    id_tara CHAR(2) NOT NULL,
+    nume VARCHAR2(30) CONSTRAINT nume_tara NOT NULL,
+    id_cont NUMBER,
+    CONSTRAINT PK_tara PRIMARY KEY(id_tara),
+    CONSTRAINT FK_tara_cont FOREIGN KEY (id_cont) REFERENCES continent(id_cont)
+);
+
+CREATE TABLE adresa(
+    id_adresa NUMBER(4) NOT NULL,
+    strada VARCHAR2(30),
+    oras VARCHAR2(30) CONSTRAINT nume_oras NOT NULL,
+    id_tara CHAR(2),
+    CONSTRAINT PK_adr PRIMARY KEY (id_adresa),
+    CONSTRAINT FK_adr_tara FOREIGN KEY (id_tara) REFERENCES tara(id_tara)
+);
+
+CREATE TABLE ong(
+    id_ong NUMBER(4) NOT NULL,
+    nume VARCHAR2(30) CONSTRAINT ong_nume NOT NULL,
+    id_adresa NUMBER(4),
+    CONSTRAINT PK_ong PRIMARY KEY (id_ong),
+    CONSTRAINT FK_ong_adr FOREIGN KEY (id_adresa) REFERENCES adresa(id_adresa)
+);
+
+CREATE TABLE membru(
+    id_membru NUMBER(4) NOT NULL,
+    id_ong NUMBER(4),
+    nume VARCHAR2(30) CONSTRAINT mem_nume NOT NULL,
+    prenume VARCHAR2(30) CONSTRAINT mem_prenume NOT NULL,
+    email VARCHAR2(30),
+    CONSTRAINT PK_mem PRIMARY KEY (id_membru),
+    CONSTRAINT FK_membru_ong FOREIGN KEY (id_ong) REFERENCES ong(id_ong)
+);
+
+CREATE TABLE proiect(
+    id_proiect NUMBER(4) NOT NULL,
+    id_ong NUMBER(4),
+    id_coord NUMBER(4),
+    nume VARCHAR2(30) CONSTRAINT pro_nume NOT NULL,
+    CONSTRAINT PK_pro PRIMARY KEY (id_proiect),
+    CONSTRAINT FK_pro_ong FOREIGN KEY (id_ong) REFERENCES ong(id_ong),
+    CONSTRAINT FK_pro_mem FOREIGN KEY (id_coord) REFERENCES membru(id_membru)
+);
+
+CREATE TABLE sponsorizeaza(
+    id_sponsor NUMBER(4) REFERENCES sponsor(id_sponsor),
+    id_proiect NUMBER(4) REFERENCES proiect(id_proiect),
+    suma NUMBER(5) CONSTRAINT sp_suma NOT NULL,
+    PRIMARY KEY(id_sponsor, id_proiect)    
+);
+
+CREATE TABLE task(
+    id_task NUMBER(4) NOT NULL,
+    id_proiect NUMBER(4),
+    deadline DATE,
+    descriere VARCHAR2(30) CONSTRAINT task_desc NOT NULL,
+    status VARCHAR2(30),
+    CONSTRAINT PK_task PRIMARY KEY(id_task),
+    CONSTRAINT FK_task_pro FOREIGN KEY(id_proiect) REFERENCES proiect(id_proiect)
+);
+
+CREATE TABLE indeplineste(
+    id_membru NUMBER(4) REFERENCES membru(id_membru),
+    id_task NUMBER(4) REFERENCES task(id_task),
+    data_finalizare DATE,
+    PRIMARY KEY(id_membru, id_task)
+);
+
+CREATE TABLE observatie(
+    id_obs NUMBER(4) NOT NULL,
+    id_membru NUMBER(4),
+    id_task NUMBER(4),
+    descriere VARCHAR2(200) CONSTRAINT obs_desc NOT NULL,
+    CONSTRAINT PK_obs PRIMARY KEY(id_obs),
+    CONSTRAINT FK_obs_mem FOREIGN KEY(id_membru) REFERENCES membru(id_membru),
+    CONSTRAINT FK_obs_task FOREIGN KEY(id_task) REFERENCES task(id_task)
+);
+
+SELECT * FROM USER_TABLES;
+
+INSERT INTO continent VALUES 
+        ( 1
+        , 'Europa' 
+        );
+
+INSERT INTO continent VALUES 
+        ( 2
+        , 'America' 
+        );
+
+INSERT INTO continent VALUES 
+        ( 3
+        , 'Asia' 
+        );
+
+INSERT INTO continent VALUES 
+        ( 4
+        , 'Africa' 
+        );
+        
+
+INSERT INTO tara VALUES 
+        ( 'JP'
+        , 'Japonia'
+        , 3 
+        );
+        
+INSERT INTO tara VALUES
+        ( 'RO'
+        , 'Romania'
+        , 1 
+        );       
+        
+INSERT INTO tara VALUES 
+        ( 'US'
+        , 'Statele Unite ale Americii'
+        , 2 
+        );
+
+INSERT INTO tara VALUES 
+        ( 'CN'
+        , 'China'
+        , 3 
+        );
+
+INSERT INTO tara VALUES 
+        ( 'ZW'
+        , 'Zimbabwe'
+        , 4 
+        );
+        
+
+INSERT INTO tara VALUES 
+        ( 'UK'
+        , 'Marea Britanite'
+        , 1 
+        );
+
+INSERT INTO adresa VALUES
+        (1 
+        , 'Iuliu Maniu 160'
+        , 'Bucuresti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (2 
+        , 'Iuliu Maniu 240'
+        , 'Bucuresti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (3 
+        , 'Constantin Brancoveanu 144'
+        , 'Bucuresti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (4 
+        , 'Mihail Lungeanu 16'
+        , 'Pitesti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (5 
+        , 'Sakurada-dori 1'
+        , 'Tokyo'
+        , 'JP' 
+        );
+        
+
+INSERT INTO ong VALUES
+        ( 1 
+        , 'Clubul cainilor utilitari'
+        , 1 
+        );
+INSERT INTO ong VALUES
+        (2 
+        , 'Asociatia pt boli hemoragice'
+        , 2 
+        );
+INSERT INTO ong VALUES
+        (3
+        , 'OPTAR'
+        , 3 
+        );
+INSERT INTO ong VALUES
+        (4 
+        , 'Fundatia 1 si 1'
+        , 4 
+        );
+INSERT INTO ong VALUES
+        (5
+        , 'Make IT'
+        , 5 
+        );
+
+
+INSERT INTO membru VALUES
+        (1
+        , 3
+        , 'Costel'
+        , 'Alex'
+        , 'a_c@gmail.com'
+        );
+INSERT INTO membru VALUES
+        (2
+        , 3
+        , 'Constantin'
+        , 'Gabriel'
+        , 'g_c@gmail.com'
+        );
+INSERT INTO membru VALUES
+        (3
+        , 3
+        , 'Ursache'
+        , 'Mircea'
+        , 'u_m@protonmail.com'
+        );
+INSERT INTO membru VALUES
+        (4
+        , 4
+        , 'Codrescu'
+        , 'Marcel'
+        , 'c_m@gmail.com'
+        );
+        
+
+INSERT INTO proiect VALUES
+        (1
+        , 3
+        , 2
+        , 'Prima banda libera'
+        );
+INSERT INTO proiect VALUES
+        (2
+        , 3
+        , 3
+        , 'Responsabilizare soferi'
+        );
+INSERT INTO proiect VALUES
+        (3
+        , 2
+        , 4
+        , 'Preventie'
+        );
+INSERT INTO proiect VALUES
+        (4
+        , 2
+        , 4
+        , 'Tratament'
+        );
+
+INSERT INTO sponsor VALUES
+        (1
+        , 'BLM INC'
+        );
+INSERT INTO sponsor VALUES
+        (2
+        , 'SC Herman'
+        );
+INSERT INTO sponsor VALUES
+        (3
+        , 'Selea Mihai'
+        );
+        
+
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 1
+        , 200
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 2
+        , 100
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 3
+        , 220
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 4
+        , 320
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 2
+        , 2
+        , 440
+        );
+        
+INSERT INTO sponsorizeaza VALUES
+        ( 2
+        , 3
+        , 200
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 2
+        , 4
+        , 100
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 1
+        , 620
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 2
+        , 300
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 3
+        , 400
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 4
+        , 700
+        );
+        
+INSERT INTO task VALUES       
+        ( 1
+        , 1
+        , '15-DEC-2020'
+        , 'masure timpi intre statii'
+        , 'NEFINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 2
+        , 1
+        , '25-DEC-2020'
+        , 'masure timpi blocat in trafic'
+        , 'NEFINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 3
+        , 1
+        , '4-MAY-2021'
+        , 'impact restictionare banda'
+        , 'NEFINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 4
+        , 1
+        , '10-DEC-2020'
+        , 'calcul timp mediu asteptare'
+        , 'FINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 5
+        , 2
+        , '13-FEB-2021'
+        , 'tutorial resuscitare'
+        , 'NEFINALIZAT'
+        );
+
+
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 2
+        , '14-FEB-2021'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 1
+        , '14-JAN-2021'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 3
+        , '14-NOV-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 4
+        , '10-NOV-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 1
+        , '18-DEC-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 2
+        , '16-NOV-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 3
+        , '24-OCT-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 4
+        , '10-DEC-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 3
+        , 1
+        , '14-OCT-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 3
+        , 2
+        , '18-DEC-2020'
+        );
+        
+
+INSERT INTO observatie VALUES
+        (1
+        , 3
+        , 2
+        , 'variante mari fata de weekend'
+        );
+INSERT INTO observatie VALUES
+        (2
+        , 1
+        , 2
+        , 'efectuat majoritatea masuratorilor la ora de varf'
+        );
+INSERT INTO observatie VALUES
+        (3
+        , 1
+        , 1
+        , 'timpii sunt influentati de prezenta/absenta semafoare si de numarul de intersectii'
+        );
+INSERT INTO observatie VALUES
+        (4
+        , 4
+        , 5
+        , 'peste 75% din soferi nu stiau sa efectueze manevra inainte de tutorial'
+        );
+SELECT * FROM sponsorizeaza;
+SELECT * FROM sponsor;
+SELECT * FROM proiect;
+SELECT * FROM ong;
+SELECT * FROM membru;
+SELECT * FROM adresa;
+SELECT * FROM continent;
+SELECT * FROM tara;
+SELECT * FROM task;
+SELECT * FROM indeplineste;
+SELECT * FROM observatie;
+COMMIT;
