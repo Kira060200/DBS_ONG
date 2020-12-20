@@ -524,7 +524,7 @@ LOOP
     IF m%ROWCOUNT = 0 THEN
         DBMS_OUTPUT.PUT_LINE(' fara membrii care au inteplinit taskuri');
     ELSE IF nr < 3 THEN
-        DBMS_OUTPUT.PUT_LINE('--mai putin de 3 angajati');
+        DBMS_OUTPUT.PUT_LINE('--mai putin de 3 membrii care au inteplinit taskuri');
         END IF;
     END IF;
     CLOSE m;
