@@ -1,0 +1,701 @@
+CREATE TABLE sponsor(
+    id_sponsor NUMBER(4) NOT NULL,
+    nume VARCHAR2(30) CONSTRAINT sp_nume NOT NULL,
+    CONSTRAINT PK_sponsor PRIMARY KEY(id_sponsor)
+);
+
+CREATE TABLE tara(
+    id_tara CHAR(2) NOT NULL,
+    nume VARCHAR2(30) CONSTRAINT nume_tara NOT NULL,
+    CONSTRAINT PK_tara PRIMARY KEY(id_tara)
+);
+
+CREATE TABLE adresa(
+    id_adresa NUMBER(4) NOT NULL,
+    strada VARCHAR2(30),
+    oras VARCHAR2(30) CONSTRAINT nume_oras NOT NULL,
+    id_tara CHAR(2),
+    CONSTRAINT PK_adr PRIMARY KEY (id_adresa),
+    CONSTRAINT FK_adr_tara FOREIGN KEY (id_tara) REFERENCES tara(id_tara)
+);
+
+CREATE TABLE ong(
+    id_ong NUMBER(4) NOT NULL,
+    nume VARCHAR2(30) CONSTRAINT ong_nume NOT NULL,
+    id_adresa NUMBER(4),
+    CONSTRAINT PK_ong PRIMARY KEY (id_ong),
+    CONSTRAINT FK_ong_adr FOREIGN KEY (id_adresa) REFERENCES adresa(id_adresa)
+);
+
+CREATE TABLE membru(
+    id_membru NUMBER(4) NOT NULL,
+    id_ong NUMBER(4),
+    nume VARCHAR2(30) CONSTRAINT mem_nume NOT NULL,
+    prenume VARCHAR2(30) CONSTRAINT mem_prenume NOT NULL,
+    email VARCHAR2(30),
+    CONSTRAINT PK_mem PRIMARY KEY (id_membru),
+    CONSTRAINT FK_membru_ong FOREIGN KEY (id_ong) REFERENCES ong(id_ong)
+);
+
+CREATE TABLE proiect(
+    id_proiect NUMBER(4) NOT NULL,
+    id_ong NUMBER(4),
+    id_coord NUMBER(4),
+    nume VARCHAR2(30) CONSTRAINT pro_nume NOT NULL,
+    CONSTRAINT PK_pro PRIMARY KEY (id_proiect),
+    CONSTRAINT FK_pro_ong FOREIGN KEY (id_ong) REFERENCES ong(id_ong),
+    CONSTRAINT FK_pro_mem FOREIGN KEY (id_coord) REFERENCES membru(id_membru)
+);
+
+CREATE TABLE sponsorizeaza(
+    id_sponsor NUMBER(4) REFERENCES sponsor(id_sponsor),
+    id_proiect NUMBER(4) REFERENCES proiect(id_proiect),
+    suma NUMBER(5) CONSTRAINT sp_suma NOT NULL,
+    PRIMARY KEY(id_sponsor, id_proiect)    
+);
+
+CREATE TABLE task(
+    id_task NUMBER(4) NOT NULL,
+    id_proiect NUMBER(4),
+    descriere VARCHAR2(30) CONSTRAINT task_desc NOT NULL,
+    status VARCHAR2(30),
+    CONSTRAINT PK_task PRIMARY KEY(id_task),
+    CONSTRAINT FK_task_pro FOREIGN KEY(id_proiect) REFERENCES proiect(id_proiect)
+);
+
+CREATE TABLE indeplineste(
+    id_membru NUMBER(4) REFERENCES membru(id_membru),
+    id_task NUMBER(4) REFERENCES task(id_task),
+    data_finalizare DATE,
+    PRIMARY KEY(id_membru, id_task)
+);
+
+SELECT * FROM USER_TABLES;
+
+INSERT INTO tara VALUES 
+        ( 'JP'
+        , 'Japonia' 
+        );
+        
+INSERT INTO tara VALUES
+        ( 'RO'
+        , 'Romania'
+        );       
+        
+INSERT INTO tara VALUES 
+        ( 'US'
+        , 'Statele Unite ale Americii'
+        );
+
+INSERT INTO tara VALUES 
+        ( 'CN'
+        , 'China'
+        );
+
+INSERT INTO tara VALUES 
+        ( 'ZW'
+        , 'Zimbabwe'
+        );
+        
+
+INSERT INTO tara VALUES 
+        ( 'UK'
+        , 'Marea Britanite'
+        );
+
+INSERT INTO adresa VALUES
+        (1 
+        , 'Iuliu Maniu 160'
+        , 'Bucuresti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (2 
+        , 'Iuliu Maniu 240'
+        , 'Bucuresti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (3 
+        , 'Constantin Brancoveanu 144'
+        , 'Bucuresti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (4 
+        , 'Mihail Lungeanu 16'
+        , 'Pitesti'
+        , 'RO' 
+        );
+INSERT INTO adresa VALUES
+        (5 
+        , 'Sakurada-dori 1'
+        , 'Tokyo'
+        , 'JP' 
+        );
+        
+
+INSERT INTO ong VALUES
+        ( 1 
+        , 'Clubul cainilor utilitari'
+        , 1 
+        );
+INSERT INTO ong VALUES
+        (2 
+        , 'Asociatia pt boli hemoragice'
+        , 2 
+        );
+INSERT INTO ong VALUES
+        (3
+        , 'OPTAR'
+        , 3 
+        );
+INSERT INTO ong VALUES
+        (4 
+        , 'Fundatia 1 si 1'
+        , 4 
+        );
+INSERT INTO ong VALUES
+        (5
+        , 'Make IT'
+        , 5 
+        );
+
+
+INSERT INTO membru VALUES
+        (1
+        , 3
+        , 'Costel'
+        , 'Alex'
+        , 'a_c@gmail.com'
+        );
+INSERT INTO membru VALUES
+        (2
+        , 3
+        , 'Constantin'
+        , 'Gabriel'
+        , 'g_c@gmail.com'
+        );
+INSERT INTO membru VALUES
+        (3
+        , 3
+        , 'Ursache'
+        , 'Mircea'
+        , 'u_m@protonmail.com'
+        );
+INSERT INTO membru VALUES
+        (4
+        , 4
+        , 'Codrescu'
+        , 'Marcel'
+        , 'c_m@gmail.com'
+        );
+INSERT INTO membru VALUES
+        (5
+        , 3
+        , 'Matache'
+        , 'Ion'
+        , 'ion_m@protonmail.com'
+        );
+INSERT INTO membru VALUES
+        (6
+        , 1
+        , 'Maxim'
+        , 'Cristian'
+        , 'cris_m@yahoo.com'
+        );
+INSERT INTO membru VALUES
+        (7
+        , 2
+        , 'Aur'
+        , 'Costel'
+        , 'a_c@yahoo.com'
+        );        
+
+INSERT INTO proiect VALUES
+        (1
+        , 3
+        , 2
+        , 'Prima banda libera'
+        );
+INSERT INTO proiect VALUES
+        (2
+        , 3
+        , 3
+        , 'Responsabilizare soferi'
+        );
+INSERT INTO proiect VALUES
+        (3
+        , 2
+        , 4
+        , 'Preventie'
+        );
+INSERT INTO proiect VALUES
+        (4
+        , 2
+        , 4
+        , 'Tratament'
+        );
+INSERT INTO proiect VALUES
+        (5
+        , 1
+        , 6
+        , 'Importanta cainilor utilitari'
+        );
+INSERT INTO proiect VALUES
+        (6
+        , 4
+        , 4
+        , 'Donatie produse alimentare'
+        );
+
+INSERT INTO sponsor VALUES
+        (1
+        , 'BLM INC'
+        );
+INSERT INTO sponsor VALUES
+        (2
+        , 'SC Herman'
+        );
+INSERT INTO sponsor VALUES
+        (3
+        , 'Selea Mihai'
+        );
+INSERT INTO sponsor VALUES
+        (4
+        , 'Mihai Ion'
+        );
+        
+
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 1
+        , 200
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 2
+        , 100
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 3
+        , 220
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 4
+        , 320
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 2
+        , 2
+        , 440
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 2
+        , 3
+        , 200
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 2
+        , 4
+        , 100
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 1
+        , 620
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 2
+        , 300
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 3
+        , 400
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 4
+        , 700
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 4
+        , 700
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 4
+        , 6
+        , 100
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 6
+        , 100
+        );
+
+INSERT INTO task VALUES       
+        ( 1
+        , 1
+        , 'masure timpi intre statii'
+        , 'NEFINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 2
+        , 1
+        , 'masure timpi blocat in trafic'
+        , 'NEFINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 3
+        , 1
+        , 'impact restictionare banda'
+        , 'NEFINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 4
+        , 1
+        , 'calcul timp mediu asteptare'
+        , 'FINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 5
+        , 2
+        , 'tutorial resuscitare'
+        , 'NEFINALIZAT'
+        );
+
+INSERT INTO task VALUES       
+        ( 6
+        , 1
+        , 'viteza mijloace alternative'
+        , 'NEFINALIZAT'
+        );
+INSERT INTO task VALUES       
+        ( 7
+        , 5
+        , 'pliante si afise publicitare'
+        , 'NEFINALIZAT'
+        );
+
+
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 2
+        , '14-FEB-2021'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 1
+        , '14-JAN-2021'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 3
+        , '14-NOV-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 1
+        , 4
+        , '10-NOV-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 1
+        , '18-DEC-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 2
+        , '16-NOV-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 3
+        , '24-OCT-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 2
+        , 4
+        , '10-DEC-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 3
+        , 1
+        , '14-OCT-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 3
+        , 2
+        , '18-DEC-2020'
+        );
+INSERT INTO indeplineste VALUES       
+        ( 5
+        , 6
+        , '11-FEB-2021'
+        );        
+INSERT INTO indeplineste VALUES       
+        ( 6
+        , 7
+        , '20-FEB-2021'
+        );
+
+
+SELECT * FROM sponsorizeaza;
+SELECT * FROM sponsor;
+SELECT * FROM proiect;
+SELECT * FROM ong;
+SELECT * FROM membru;
+SELECT * FROM adresa;
+SELECT * FROM tara;
+SELECT * FROM task;
+SELECT * FROM indeplineste;
+
+COMMIT;
+SELECT* FROM proiect;
+SELECT id_ong, COUNT(*) FROM proiect GROUP BY id_ong;
+SELECT * FROM MEMBRU m JOIN ONG o ON (m.id_ong=o.id_ong);
+SELECT * FROM ONG o JOIN ADRESA a ON (o.id_adresa=a.id_adresa);
+
+--6
+CREATE OR REPLACE PROCEDURE p6
+IS
+TYPE date_membru IS TABLE OF membru%ROWTYPE INDEX BY BINARY_INTEGER;
+t date_membru;
+BEGIN
+    SELECT *
+    BULK COLLECT INTO t
+    FROM membru
+    WHERE id_membru IN (SELECT id_coord
+                        FROM proiect
+                        GROUP BY id_coord
+                        HAVING COUNT(*)>=1);
+    FOR i in t.FIRST..t.LAST LOOP
+        DBMS_OUTPUT.PUT_LINE('id membru: ' || t(i).id_membru || ', id ong: ' || t(i).id_ong || ', nume: ' || t(i).nume || ', prenume: ' || t(i).prenume || ', email: ' || t(i).email);
+    END LOOP;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20000, 'Nu exista membru care sa indeplineasca aceste criterii');
+END p6;
+/
+BEGIN
+    p6;
+END;
+/
+
+--7
+CREATE OR REPLACE PROCEDURE p7
+IS
+CURSOR p IS SELECT id_proiect, nume FROM proiect;
+CURSOR m(PARAM NUMBER) IS SELECT i.id_membru, nume, COUNT(*) 
+                          FROM indeplineste i JOIN task t ON(t.id_task=i.id_task)
+                                              JOIN membru m ON(i.id_membru=m.id_membru)
+                          WHERE id_proiect = PARAM
+                          GROUP BY i.id_membru, nume
+                          ORDER BY COUNT(*) DESC;
+pr_id proiect.id_proiect%TYPE;
+pr_nume proiect.nume%TYPE;
+mb_id membru.id_membru%TYPE;
+mb_nume membru.nume%TYPE;
+t_nr NUMBER(5);
+old_t_nr NUMBER(5);
+nr NUMBER;
+BEGIN
+OPEN p;
+LOOP
+    FETCH p INTO pr_id, pr_nume;
+    EXIT WHEN p%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('Proiect: ' || pr_nume);
+    nr := 0;
+    OPEN m(pr_id);
+    LOOP
+        FETCH m INTO mb_id, mb_nume, t_nr;
+        EXIT WHEN m%NOTFOUND OR nr=3;
+        DBMS_OUTPUT.PUT_LINE('Membrul cu id-ul ' || mb_id ||' si numele '|| mb_nume ||' indeplineste '|| t_nr || ' task-uri');
+        IF nr = 0 OR t_nr != old_t_nr THEN
+            nr := nr + 1;
+        END IF;
+        old_t_nr := t_nr;
+    END LOOP;
+    IF m%ROWCOUNT = 0 THEN
+        DBMS_OUTPUT.PUT_LINE(' Nu exista membrii care au indeplinit taskuri');
+    ELSE IF nr < 3 THEN
+        DBMS_OUTPUT.PUT_LINE('--membrii insuficienti pentru cele 3 pozitii');
+        END IF;
+    END IF;
+    CLOSE m;
+END LOOP;
+CLOSE p;
+END p7;
+/
+BEGIN
+p7;
+END;
+/
+
+--8
+CREATE OR REPLACE FUNCTION f8
+    (v_oras adresa.oras%TYPE DEFAULT 'Bucuresti',
+    v_nr NUMBER DEFAULT 2)
+RETURN NUMBER IS
+    ONG_ID NUMBER(3);
+    BEGIN
+        SELECT id_ong
+        INTO ONG_ID
+        FROM ong o JOIN adresa a ON (o.id_adresa=a.id_adresa)
+        WHERE UPPER(oras)=UPPER(v_oras) AND (SELECT COUNT(id_membru)
+                                            FROM membru
+                                            WHERE id_ong = o.id_ong)=v_nr;
+        RETURN ONG_ID;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20000, 'Nu exista ONG care sa indeplineasca aceste criterii');
+        WHEN TOO_MANY_ROWS THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Exista mai multe ONG-uri care indeplinesc aceste criterii');
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20002, 'Alta eroare!');
+END f8;
+/
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||f8);
+END;
+/
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||f8('Pitesti', 1));
+END;
+/
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||f8('Bucuresti', 1));
+END;
+/
+
+--9
+CREATE OR REPLACE PROCEDURE p9
+    (v_oras adresa.oras%TYPE)
+IS
+    v_nume sponsor.nume%TYPE;
+    v_id_sponsor sponsor.id_sponsor%TYPE;
+    v_id_ong ong.id_ong%TYPE;
+    v_suma sponsorizeaza.suma%TYPE;
+BEGIN
+    SELECT SUM(suma), p.id_ong, s.id_sponsor, sp.nume
+    INTO v_suma, v_id_ong, v_id_sponsor, v_nume
+    FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
+                         JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
+                         JOIN ong o ON (p.id_ong = o.id_ong)
+                         JOIN adresa a ON (o.id_adresa = a.id_adresa)
+    WHERE UPPER(a.oras)=UPPER(v_oras)
+    GROUP BY p.id_ong, s.id_sponsor, sp.nume
+    HAVING SUM(suma) IN (
+                            SELECT MAX(SUM(suma))
+                            FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
+                                                 JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
+                                                 JOIN ong o ON (p.id_ong = o.id_ong)
+                                                 JOIN adresa a ON (o.id_adresa = a.id_adresa)
+                            WHERE UPPER(a.oras)=UPPER(v_oras)
+                            GROUP BY p.id_ong, s.id_sponsor);
+    DBMS_OUTPUT.PUT_LINE('Cel mai generos sponsor este ' || v_nume || ' cu suma totala de ' || v_suma);
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20000, 'Nu exista sponsorul cautat');
+    WHEN TOO_MANY_ROWS THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Exista mai multi sponsori care indeplinesc acest criteriu');
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Alta eroare!');
+END p9;
+/
+
+BEGIN
+    p9('bucuresti');
+END;
+/
+BEGIN
+    p9('pitesti');
+END;
+/
+BEGIN
+    p9('tokyo');
+END;
+/
+
+--10
+--trigger LMD la nivel de comanda care nu permite lmd pe ONG sambata, duminica, si in cursul saptamanii in afara oreleor 6-22 
+CREATE OR REPLACE TRIGGER t_late
+BEFORE INSERT OR UPDATE OR DELETE ON ong
+BEGIN
+IF (TO_CHAR(SYSDATE, 'D')=6) OR (TO_CHAR(SYSDATE, 'D')=7) THEN
+    RAISE_APPLICATION_ERROR(-20009, 'Tabela nu poate fi actualizata in weekend!');
+ELSIF TO_CHAR(SYSDATE, 'HH24') NOT BETWEEN 6 AND 22 THEN
+    RAISE_APPLICATION_ERROR(-20009, 'Tabela nu poate fi actualizata in acest interval orar!');
+END IF;
+END;
+/
+SELECT TO_CHAR(SYSDATE, 'D') FROM DUAL;
+UPDATE ong
+SET nume = 'makit'
+WHERE id_ong = 5;
+/*SELECT SUM(suma), p.id_ong, s.id_sponsor, sp.nume
+FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
+                     JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
+                     JOIN ong o ON (p.id_ong = o.id_ong)
+                     JOIN adresa a ON (o.id_adresa = a.id_adresa)
+WHERE UPPER(a.oras)='BUCURESTI'
+GROUP BY p.id_ong, s.id_sponsor, sp.nume
+HAVING SUM(suma) IN (
+                        SELECT MAX(SUM(suma))
+                        FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
+                                             JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
+                                             JOIN ong o ON (p.id_ong = o.id_ong)
+                                             JOIN adresa a ON (o.id_adresa = a.id_adresa)
+                        WHERE UPPER(a.oras)='BUCURESTI'
+                        GROUP BY p.id_ong, s.id_sponsor);
+SELECT * FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect);*/
+---trigger LMD la nivel de instructiune care actualizeaza campul status atunci cand se introduce sau sterge o asignare de task(din tabela INDEPLIINESTE) sau se modifica data de finalizare.
+---Daca nu avem NULL la data_finalizare in indeplineste si avem cel putin un entry atunci status=FINALIZAT, else NEFINALIZAT
+
+--11
+--trigger LMD la nivel de instructiune care nu permite inserarea/actualizarea cu o suma negativa oferita de un sponsor
+CREATE OR REPLACE TRIGGER t_suma
+BEFORE INSERT OR UPDATE OF suma ON sponsorizeaza
+FOR EACH ROW
+BEGIN
+IF (:NEW.suma <= 0) THEN
+    RAISE_APPLICATION_ERROR(-20009, 'Suma donata trebuie sa fie un numar pozitiv!');
+END IF;
+END;
+/
+
+UPDATE sponsorizeaza
+SET suma = -50;
+
+
+--12
+CREATE TABLE log_dbs 
+    (dbs_user VARCHAR2(30),
+    log_date DATE,
+    event VARCHAR2(20),
+    dbs_name VARCHAR2(50),
+    target_name VARCHAR2(30) 
+    ); 
+CREATE OR REPLACE TRIGGER t_log 
+AFTER CREATE OR DROP OR ALTER ON SCHEMA 
+BEGIN 
+INSERT INTO log_dbs VALUES (SYS.LOGIN_USER, 
+                            SYSDATE,
+                            SYS.SYSEVENT,
+                            SYS.DATABASE_NAME,
+                            SYS.DICTIONARY_OBJ_NAME
+                            ); 
+END; 
+/ 
+ALTER TABLE tara ADD membra_ue VARCHAR2(3);
+ALTER TABLE adresa
+DROP CONSTRAINT FK_ADR_TARA;
+--ALTER TABLE adresa ADD CONSTRAINT FK_adr_tara FOREIGN KEY (id_tara) REFERENCES tara(id_tara); 
+DROP TABLE tara;
+SELECT * FROM log_dbs; 
+DROP TRIGGER t_log;
