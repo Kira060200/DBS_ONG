@@ -1,3 +1,4 @@
+--4
 CREATE TABLE sponsor(
     id_sponsor NUMBER(4) NOT NULL,
     nume VARCHAR2(30) CONSTRAINT sp_nume NOT NULL,
@@ -7,7 +8,6 @@ CREATE TABLE sponsor(
 CREATE TABLE tara(
     id_tara CHAR(2) NOT NULL,
     nume VARCHAR2(30) CONSTRAINT nume_tara NOT NULL,
-    id_cont NUMBER,
     CONSTRAINT PK_tara PRIMARY KEY(id_tara)
 );
 
@@ -71,9 +71,10 @@ CREATE TABLE indeplineste(
     PRIMARY KEY(id_membru, id_task)
 );
 
+--Testare
 SELECT * FROM USER_TABLES;
 
-
+--5
 INSERT INTO tara VALUES 
         ( 'JP'
         , 'Japonia' 
@@ -206,7 +207,13 @@ INSERT INTO membru VALUES
         , 'Cristian'
         , 'cris_m@yahoo.com'
         );
-        
+INSERT INTO membru VALUES
+        (7
+        , 2
+        , 'Aur'
+        , 'Costel'
+        , 'a_c@yahoo.com'
+        );        
 
 INSERT INTO proiect VALUES
         (1
@@ -235,8 +242,14 @@ INSERT INTO proiect VALUES
 INSERT INTO proiect VALUES
         (5
         , 1
-        , 4
+        , 6
         , 'Importanta cainilor utilitari'
+        );
+INSERT INTO proiect VALUES
+        (6
+        , 4
+        , 4
+        , 'Donatie produse alimentare'
         );
 
 INSERT INTO sponsor VALUES
@@ -250,6 +263,10 @@ INSERT INTO sponsor VALUES
 INSERT INTO sponsor VALUES
         (3
         , 'Selea Mihai'
+        );
+INSERT INTO sponsor VALUES
+        (4
+        , 'Mihai Ion'
         );
         
 
@@ -278,7 +295,6 @@ INSERT INTO sponsorizeaza VALUES
         , 2
         , 440
         );
-        
 INSERT INTO sponsorizeaza VALUES
         ( 2
         , 3
@@ -309,7 +325,22 @@ INSERT INTO sponsorizeaza VALUES
         , 4
         , 700
         );
-        
+INSERT INTO sponsorizeaza VALUES
+        ( 3
+        , 4
+        , 700
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 4
+        , 6
+        , 100
+        );
+INSERT INTO sponsorizeaza VALUES
+        ( 1
+        , 6
+        , 100
+        );
+
 INSERT INTO task VALUES       
         ( 1
         , 1
@@ -416,7 +447,9 @@ INSERT INTO indeplineste VALUES
         , '20-FEB-2021'
         );
 
+COMMIT;
 
+--Testare
 SELECT * FROM sponsorizeaza;
 SELECT * FROM sponsor;
 SELECT * FROM proiect;
@@ -427,13 +460,9 @@ SELECT * FROM tara;
 SELECT * FROM task;
 SELECT * FROM indeplineste;
 
-COMMIT;
-SELECT* FROM proiect;
-SELECT id_ong, COUNT(*) FROM proiect GROUP BY id_ong;
-SELECT * FROM MEMBRU m JOIN ONG o ON (m.id_ong=o.id_ong);
-SELECT * FROM ONG o JOIN ADRESA a ON (o.id_adresa=a.id_adresa);
 
 --6
+--Un subprogram stocat care mentine intr-o colectie datele membrilor care coordoneaza cel putin un proiect si le afiseaza
 CREATE OR REPLACE PROCEDURE p6
 IS
 TYPE date_membru IS TABLE OF membru%ROWTYPE INDEX BY BINARY_INTEGER;
@@ -445,18 +474,28 @@ BEGIN
     WHERE id_membru IN (SELECT id_coord
                         FROM proiect
                         GROUP BY id_coord
-                        HAVING COUNT(*)>=2);
+                        HAVING COUNT(*)>=1);
     FOR i in t.FIRST..t.LAST LOOP
         DBMS_OUTPUT.PUT_LINE('id membru: ' || t(i).id_membru || ', id ong: ' || t(i).id_ong || ', nume: ' || t(i).nume || ', prenume: ' || t(i).prenume || ', email: ' || t(i).email);
     END LOOP;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20000, 'Nu exista membru care sa indeplineasca aceste criterii');
 END p6;
 /
+
+--Apelare
 BEGIN
     p6;
 END;
 /
 
 --7
+--Un subprogram stocat care utilizand cel putin un cursor realizeaza top 3 membrii 
+--Acesta afiseaza datele membrilor din clasament pentru fiecare proiect, numele proiectului fiind afisat o singura data la inceput.
+--Top-ul este constituit in functie de numarul de task-uri corespunzatoare fiecarui membru. 
+--Daca exista mai multi membrii cu acelasi numar de task-uri, atunci acestia vor ocupa aceeasi pozitie in top.
+--Se vor afisa mesaje corespunzatoare in cazul in care nu exista suficienti membrii pentru a popula top-ul sau nu exista membrii care sa indeplineasca task-uri
 CREATE OR REPLACE PROCEDURE p7
 IS
 CURSOR p IS SELECT id_proiect, nume FROM proiect;
@@ -501,12 +540,17 @@ END LOOP;
 CLOSE p;
 END p7;
 /
+
+--Apelare
 BEGIN
 p7;
 END;
 /
 
 --8
+--Un subprogram stocat de tip functie care determina id-ul ONG-ului care are un anumit numar de mebrii dintr-un oras dat prin nume.
+--Numarul de membrii si numele orasului vor fi date ca parametru. In cazul in care nu sunt specificate, se vor alege implicit valorile 2 si Bucuresti.
+--Se trateaza cazurile in care exista mai multe ONG-uri sau nu exista un ONG care sa respecte criteriile date afisandu-se mesaje corespunzatoare si orpindu-se executia .
 CREATE OR REPLACE FUNCTION f8
     (v_oras adresa.oras%TYPE DEFAULT 'Bucuresti',
     v_nr NUMBER DEFAULT 2)
@@ -529,6 +573,8 @@ RETURN NUMBER IS
             RAISE_APPLICATION_ERROR(-20002, 'Alta eroare!');
 END f8;
 /
+--Testare ex 8
+--Exemplificare exceptie NO_DATA_FOUND
 BEGIN
     DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||f8);
 END;
@@ -537,12 +583,15 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||f8('Pitesti', 1));
 END;
 /
+--Exemplificare exceptie TOO_MANY_ROWS
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||f8('Bucuresti', 0));
+    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||f8('Bucuresti', 1));
 END;
 /
 
 --9
+--Un subprogram stocat de tip procedura care afiseaza suma donata si numele sponsorului care a donat in total cel mai mult pentru un ONG dintr-un oras dat ca parametru.
+--Se vor trata exceptiile afisandu-se mesaje corespunzatoare si orpindu-se executia cand exista mai multi sponsori sau nu exista sponsor care sa indeplineasca criteriile date.
 CREATE OR REPLACE PROCEDURE p9
     (v_oras adresa.oras%TYPE)
 IS
@@ -578,27 +627,267 @@ EXCEPTION
 END p9;
 /
 
+--Testare ex 9
 BEGIN
     p9('bucuresti');
 END;
 /
+--Exemplificare exceptie TOO_MANY_ROWS
 BEGIN
     p9('pitesti');
 END;
 /
-/*SELECT SUM(suma), p.id_ong, s.id_sponsor, sp.nume
-FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
-                     JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
-                     JOIN ong o ON (p.id_ong = o.id_ong)
-                     JOIN adresa a ON (o.id_adresa = a.id_adresa)
-WHERE UPPER(a.oras)='BUCURESTI'
-GROUP BY p.id_ong, s.id_sponsor, sp.nume
-HAVING SUM(suma) IN (
-                        SELECT MAX(SUM(suma))
-                        FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
-                                             JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
-                                             JOIN ong o ON (p.id_ong = o.id_ong)
-                                             JOIN adresa a ON (o.id_adresa = a.id_adresa)
-                        WHERE UPPER(a.oras)='BUCURESTI'
-                        GROUP BY p.id_ong, s.id_sponsor);
-SELECT * FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect);*/
+--Exemplificare exceptie NO_DATA_FOUND
+BEGIN
+    p9('tokyo');
+END;
+/
+
+--10
+--trigger LMD la nivel de comanda care nu permite INSERT,UPDATE,DELETE pe tabela ONG in weekend (sambata si duminica) si in cursul saptamanii in afara orelor 6-22 
+--Se vor afisa mesaje corespunzatoare pentru fiecare caz.
+CREATE OR REPLACE TRIGGER t_late
+BEFORE INSERT OR UPDATE OR DELETE ON ong
+BEGIN
+IF (TO_CHAR(SYSDATE, 'D')=6) OR (TO_CHAR(SYSDATE, 'D')=7) THEN
+    RAISE_APPLICATION_ERROR(-20009, 'Tabela nu poate fi actualizata in weekend!');
+ELSIF TO_CHAR(SYSDATE, 'HH24') NOT BETWEEN 6 AND 22 THEN
+    RAISE_APPLICATION_ERROR(-20009, 'Tabela nu poate fi actualizata in acest interval orar!');
+END IF;
+END;
+/
+
+--Testare trigger 10
+SELECT TO_CHAR(SYSDATE, 'D') FROM DUAL;
+UPDATE ong
+SET nume = 'makit'
+WHERE id_ong = 5;
+
+--11
+--trigger LMD la nivel de linie care nu permite inserarea/actualizarea cu o suma negativa oferita de un sponsor
+CREATE OR REPLACE TRIGGER t_suma
+BEFORE INSERT OR UPDATE OF suma ON sponsorizeaza
+FOR EACH ROW
+BEGIN
+IF (:NEW.suma <= 0) THEN
+    RAISE_APPLICATION_ERROR(-20009, 'Suma donata trebuie sa fie un numar pozitiv!');
+END IF;
+END;
+/
+
+--Testare trigger 11
+UPDATE sponsorizeaza
+SET suma = suma - 500;
+
+
+--12
+----un trigger LDD care sa introduca date in tabela log_dbs care stocheaza informatii cu privire la operatiile LDD efectuate. Se va creea tabela pentru a stoca aceste date.
+CREATE TABLE log_dbs 
+    (dbs_user VARCHAR2(30),
+    log_date DATE,
+    event VARCHAR2(20),
+    dbs_name VARCHAR2(50),
+    target_name VARCHAR2(30) 
+    );
+    
+CREATE OR REPLACE TRIGGER t_log 
+AFTER CREATE OR DROP OR ALTER ON SCHEMA 
+BEGIN 
+INSERT INTO log_dbs VALUES (SYS.LOGIN_USER, 
+                            SYSDATE,
+                            SYS.SYSEVENT,
+                            SYS.DATABASE_NAME,
+                            SYS.DICTIONARY_OBJ_NAME
+                            ); 
+END; 
+/
+
+--Testare trigger 12
+ALTER TABLE tara ADD membra_ue VARCHAR2(3);
+ALTER TABLE adresa
+DROP CONSTRAINT FK_ADR_TARA;
+DROP TABLE tara;
+
+SELECT * FROM log_dbs;
+
+--13
+CREATE OR REPLACE PACKAGE pachet13 AS
+    PROCEDURE p6;
+    PROCEDURE p7;
+    FUNCTION f8(v_oras adresa.oras%TYPE DEFAULT 'Bucuresti', v_nr NUMBER DEFAULT 2) 
+    RETURN NUMBER;
+    PROCEDURE p9(v_oras adresa.oras%TYPE);
+END pachet13;
+/
+CREATE OR REPLACE PACKAGE BODY pachet13 AS
+
+--6
+PROCEDURE p6
+IS
+TYPE date_membru IS TABLE OF membru%ROWTYPE INDEX BY BINARY_INTEGER;
+t date_membru;
+BEGIN
+    SELECT *
+    BULK COLLECT INTO t
+    FROM membru
+    WHERE id_membru IN (SELECT id_coord
+                        FROM proiect
+                        GROUP BY id_coord
+                        HAVING COUNT(*)>=1);
+    FOR i in t.FIRST..t.LAST LOOP
+        DBMS_OUTPUT.PUT_LINE('id membru: ' || t(i).id_membru || ', id ong: ' || t(i).id_ong || ', nume: ' || t(i).nume || ', prenume: ' || t(i).prenume || ', email: ' || t(i).email);
+    END LOOP;
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20000, 'Nu exista membru care sa indeplineasca aceste criterii');
+END p6;
+
+--7
+PROCEDURE p7
+IS
+CURSOR p IS SELECT id_proiect, nume FROM proiect;
+CURSOR m(PARAM NUMBER) IS SELECT i.id_membru, nume, COUNT(*) 
+                          FROM indeplineste i JOIN task t ON(t.id_task=i.id_task)
+                                              JOIN membru m ON(i.id_membru=m.id_membru)
+                          WHERE id_proiect = PARAM
+                          GROUP BY i.id_membru, nume
+                          ORDER BY COUNT(*) DESC;
+pr_id proiect.id_proiect%TYPE;
+pr_nume proiect.nume%TYPE;
+mb_id membru.id_membru%TYPE;
+mb_nume membru.nume%TYPE;
+t_nr NUMBER(5);
+old_t_nr NUMBER(5);
+nr NUMBER;
+BEGIN
+    OPEN p;
+    LOOP
+        FETCH p INTO pr_id, pr_nume;
+        EXIT WHEN p%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('Proiect: ' || pr_nume);
+        nr := 0;
+        OPEN m(pr_id);
+        LOOP
+            FETCH m INTO mb_id, mb_nume, t_nr;
+            EXIT WHEN m%NOTFOUND OR nr=3;
+            DBMS_OUTPUT.PUT_LINE('Membrul cu id-ul ' || mb_id ||' si numele '|| mb_nume ||' indeplineste '|| t_nr || ' task-uri');
+            IF nr = 0 OR t_nr != old_t_nr THEN
+                nr := nr + 1;
+            END IF;
+            old_t_nr := t_nr;
+        END LOOP;
+        IF m%ROWCOUNT = 0 THEN
+            DBMS_OUTPUT.PUT_LINE(' Nu exista membrii care au indeplinit taskuri');
+        ELSE IF nr < 3 THEN
+            DBMS_OUTPUT.PUT_LINE('--membrii insuficienti pentru cele 3 pozitii');
+            END IF;
+        END IF;
+        CLOSE m;
+    END LOOP;
+    CLOSE p;
+END p7;
+
+--8
+FUNCTION f8
+    (v_oras adresa.oras%TYPE DEFAULT 'Bucuresti',
+    v_nr NUMBER DEFAULT 2)
+RETURN NUMBER IS
+    ONG_ID NUMBER(3);
+    BEGIN
+        SELECT id_ong
+        INTO ONG_ID
+        FROM ong o JOIN adresa a ON (o.id_adresa=a.id_adresa)
+        WHERE UPPER(oras)=UPPER(v_oras) AND (SELECT COUNT(id_membru)
+                                            FROM membru
+                                            WHERE id_ong = o.id_ong)=v_nr;
+        RETURN ONG_ID;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20000, 'Nu exista ONG care sa indeplineasca aceste criterii');
+        WHEN TOO_MANY_ROWS THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Exista mai multe ONG-uri care indeplinesc aceste criterii');
+        WHEN OTHERS THEN
+            RAISE_APPLICATION_ERROR(-20002, 'Alta eroare!');
+END f8;
+
+--9
+PROCEDURE p9
+    (v_oras adresa.oras%TYPE)
+IS
+    v_nume sponsor.nume%TYPE;
+    v_id_sponsor sponsor.id_sponsor%TYPE;
+    v_id_ong ong.id_ong%TYPE;
+    v_suma sponsorizeaza.suma%TYPE;
+BEGIN
+    SELECT SUM(suma), p.id_ong, s.id_sponsor, sp.nume
+    INTO v_suma, v_id_ong, v_id_sponsor, v_nume
+    FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
+                         JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
+                         JOIN ong o ON (p.id_ong = o.id_ong)
+                         JOIN adresa a ON (o.id_adresa = a.id_adresa)
+    WHERE UPPER(a.oras)=UPPER(v_oras)
+    GROUP BY p.id_ong, s.id_sponsor, sp.nume
+    HAVING SUM(suma) IN (
+                            SELECT MAX(SUM(suma))
+                            FROM sponsorizeaza s JOIN proiect p ON (s.id_proiect = p.id_proiect)
+                                                 JOIN sponsor sp ON (s.id_sponsor = sp.id_sponsor)
+                                                 JOIN ong o ON (p.id_ong = o.id_ong)
+                                                 JOIN adresa a ON (o.id_adresa = a.id_adresa)
+                            WHERE UPPER(a.oras)=UPPER(v_oras)
+                            GROUP BY p.id_ong, s.id_sponsor);
+    DBMS_OUTPUT.PUT_LINE('Cel mai generos sponsor este ' || v_nume || ' cu suma totala de ' || v_suma);
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20000, 'Nu exista sponsorul cautat');
+    WHEN TOO_MANY_ROWS THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Exista mai multi sponsori care indeplinesc acest criteriu');
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Alta eroare!');
+END p9;
+
+END pachet13;
+/
+
+--Testare ex 9
+BEGIN
+    pachet13.p9('bucuresti');
+END;
+/
+--Exemplificare exceptie TOO_MANY_ROWS
+BEGIN
+    pachet13.p9('pitesti');
+END;
+/
+--Exemplificare exceptie NO_DATA_FOUND
+BEGIN
+    pachet13.p9('tokyo');
+END;
+/
+
+--Testare ex 8
+--Exemplificare exceptie NO_DATA_FOUND
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||pachet13.f8);
+END;
+/
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||pachet13.f8('Pitesti', 1));
+END;
+/
+--Exemplificare exceptie TOO_MANY_ROWS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Id-ul ONG-ului cautat este: '||pachet13.f8('Bucuresti', 1));
+END;
+/
+
+--Testare ex 7
+BEGIN
+pachet13.p7;
+END;
+/
+
+--Testare ex 6
+BEGIN
+pachet13.p6;
+END;
+/
