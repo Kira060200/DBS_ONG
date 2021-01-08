@@ -891,3 +891,75 @@ BEGIN
 pachet13.p6;
 END;
 /
+
+--14
+--Un pachet care utilizeaza un tip de date complex(vector de vectori) pentru a mentine si a afisa ONG-urile si numarul lor pentru fiecare oras.
+--Astfel, vom avea un vector de perechi de tipul (v_o, v_ong), unde v_o este numele orasului si v_ong este vectorul ce contine ONG-urile din acel oras.
+--Pachetul utilizeaza o functie ce returneaza vectorul de ong-uri dintr-un oras dat ca parametru.
+--Aceasta functie este folosita apoi de o procedura pentru a popula vectorul de vectori, procedura care la randul ei ofera acest vector de vectori unei alte proceduri pentru afisare 
+CREATE OR REPLACE PACKAGE pachet14 AS
+
+TYPE ongs IS VARRAY(30) OF VARCHAR2(40);
+TYPE tuple IS RECORD (city VARCHAR2(30), o ongs);
+TYPE vector IS VARRAY(30) OF tuple;
+FUNCTION f_ong_14(
+    v_oras adresa.oras%TYPE
+)
+RETURN ongs;
+PROCEDURE pop_14;
+PROCEDURE display_14(vec vector);
+
+END pachet14;
+/
+
+CREATE OR REPLACE PACKAGE BODY pachet14 AS
+
+FUNCTION f_ong_14(
+    v_oras adresa.oras%TYPE
+)
+RETURN ongs IS o ongs;
+BEGIN
+    SELECT nume
+    BULK COLLECT INTO o
+    FROM ong og JOIN adresa a ON (og.id_adresa = a.id_adresa)
+    WHERE UPPER(v_oras) = UPPER(a.oras);
+    RETURN o;
+END;
+
+PROCEDURE pop_14 IS 
+TYPE veoras IS VARRAY(30) OF VARCHAR2(30);
+vec vector := vector();
+voras veoras;
+BEGIN
+    SELECT DISTINCT(oras)
+    BULK COLLECT INTO voras
+    FROM adresa;
+    
+    FOR i in voras.FIRST..voras.LAST LOOP
+        vec.extend();
+        vec(i).city := voras(i);
+        vec(i).o := f_ong_14(voras(i));
+    END LOOP;
+    display_14(vec);
+END;
+
+PROCEDURE display_14 (vec vector) IS
+BEGIN
+    FOR i in vec.FIRST..vec.LAST LOOP
+        DBMS_OUTPUT.PUT_LINE('-----ORAS: ' || vec(i).city || '-----');
+        DBMS_OUTPUT.PUT_LINE('---numar ong-uri: ' || vec(i).o.LAST);
+        FOR j in vec(i).o.FIRST..vec(i).o.LAST LOOP
+            DBMS_OUTPUT.PUT_LINE(vec(i).o(j));
+        END LOOP;
+        DBMS_OUTPUT.PUT_LINE('');
+    END LOOP;
+END;
+
+END pachet14;
+/
+
+--Testare pachet 14
+BEGIN
+    pachet14.pop_14;
+END;
+/
